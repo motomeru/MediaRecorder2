@@ -1,17 +1,13 @@
-const localAudio = document.getElementById('localAudio');
-const remoteAudio = document.getElementById('remoteAudio');
-const startPeerBtn = document.getElementById('startPeer');
-
-const startLocalRecordingBtn = document.getElementById('startLocalRecording');
-const stopLocalRecordingBtn = document.getElementById('stopLocalRecording');
-const startRemoteRecordingBtn = document.getElementById('startRemoteRecording');
-const stopRemoteRecordingBtn = document.getElementById('stopRemoteRecording');
+const startRecordingBtn = document.getElementById('startRecording');
+const stopRecordingBtn = document.getElementById('stopRecording');
+const recordingsList = document.getElementById('recordingsList');
 
 let localStream;
 let remoteStream;
-
 let localRecorder;
 let remoteRecorder;
+let localChunks = [];
+let remoteChunks = [];
 
 // Basic STUN server configuration
 const configuration = {
@@ -23,48 +19,70 @@ const configuration = {
 const pc1 = new RTCPeerConnection(configuration);
 const pc2 = new RTCPeerConnection(configuration);
 
-// Handle the creation of the answer
 pc1.onicecandidate = event => pc2.addIceCandidate(event.candidate);
 pc2.onicecandidate = event => pc1.addIceCandidate(event.candidate);
 
-// When remote stream arrives, display it in the remote audio element
 pc2.ontrack = event => {
-    remoteAudio.srcObject = event.streams[0];
     remoteStream = event.streams[0];
+    remoteRecorder = new MediaRecorder(remoteStream);
+    remoteRecorder.ondataavailable = event => {
+        remoteChunks.push(event.data);
+    };
+    remoteRecorder.onstop = createDownloadLinkForRemote;
+    remoteRecorder.start();
 };
 
-startPeerBtn.addEventListener('click', async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    localAudio.srcObject = stream;
-    localStream = stream;
+async function startRecording() {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    localRecorder = new MediaRecorder(localStream);
+    localRecorder.ondataavailable = event => {
+        localChunks.push(event.data);
+    };
+    localRecorder.onstop = createDownloadLinkForLocal;
+    localRecorder.start();
 
-    stream.getTracks().forEach(track => pc1.addTrack(track, stream));
+    localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
 
     const offer = await pc1.createOffer();
     await pc1.setLocalDescription(offer);
     await pc2.setRemoteDescription(offer);
-
+    
     const answer = await pc2.createAnswer();
     await pc2.setLocalDescription(answer);
     await pc1.setRemoteDescription(answer);
-});
+}
 
-startLocalRecordingBtn.addEventListener('click', () => {
-    localRecorder = new MediaRecorder(localStream);
-    localRecorder.start();
-    // TODO: Handle ondataavailable for localRecorder as per your requirements
-});
+function stopAllRecording() {
+    if (localRecorder && localRecorder.state === "recording") {
+        localRecorder.stop();
+    }
 
-stopLocalRecordingBtn.addEventListener('click', () => {
-    localRecorder.stop();
-});
+    if (remoteRecorder && remoteRecorder.state === "recording") {
+        remoteRecorder.stop();
+    }
+}
 
-startRemoteRecordingBtn.addEventListener('click', () => {
-    remoteRecorder = new MediaRecorder(remoteStream);
-    remoteRecorder.start();
-    // TODO: Handle ondataavailable for remoteRecorder as per your requirements
-});
+function createDownloadLinkForLocal() {
+    const blob = new Blob(localChunks, { type: "audio/ogg; codecs=opus" });
+    const url = URL.createObjectURL(blob);
+    createDownloadElement("Local Recording", url);
+}
 
-stopRemoteRecordingBtn.addEventListener('click', () => {
-    remoteRecorder.stop();
-});
+function createDownloadLinkForRemote() {
+    const blob = new Blob(remoteChunks, { type: "audio/ogg; codecs=opus" });
+    const url = URL.createObjectURL(blob);
+    createDownloadElement("Remote Recording", url);
+}
+
+function createDownloadElement(label, url) {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${label}.ogg`;
+    a.innerHTML = a.download;
+    li.appendChild(a);
+    recordingsList.appendChild(li);
+}
+
+startRecordingBtn.addEventListener('click', startRecording);
+stopRecordingBtn.addEventListener('click', stopAllRecording);
