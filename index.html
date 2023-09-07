@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebRTC Recorder</title>
+    <title>Audio WebRTC Recorder</title>
 </head>
 <body>
     <button id="startPeer">Start Peer Connection</button>
 
     <div id="localControls">
-        <h3>Local Video</h3>
-        <video id="localVideo" autoplay muted playsinline></video>
-        <button id="startLocalRecording">Start Local Recording</button>
-        <button id="stopLocalRecording">Stop Local Recording</button>
+        <h3>Local Audio (Microphone)</h3>
+        <audio id="localAudio" controls></audio>
+        <button id="startLocalRecording">Start Microphone Recording</button>
+        <button id="stopLocalRecording">Stop Microphone Recording</button>
     </div>
 
     <div id="remoteControls">
-        <h3>Remote Video</h3>
-        <video id="remoteVideo" autoplay playsinline></video>
-        <button id="startRemoteRecording">Start Remote Recording</button>
-        <button id="stopRemoteRecording">Stop Remote Recording</button>
+        <h3>Remote Audio (Speaker Output)</h3>
+        <audio id="remoteAudio" controls></audio>
+        <button id="startRemoteRecording">Start Speaker Recording</button>
+        <button id="stopRemoteRecording">Stop Speaker Recording</button>
     </div>
 
     <script src="app.js"></script>

@@ -1,5 +1,5 @@
-const localVideo = document.getElementById('localVideo');
-const remoteVideo = document.getElementById('remoteVideo');
+const localAudio = document.getElementById('localAudio');
+const remoteAudio = document.getElementById('remoteAudio');
 const startPeerBtn = document.getElementById('startPeer');
 
 const startLocalRecordingBtn = document.getElementById('startLocalRecording');
@@ -13,7 +13,7 @@ let remoteStream;
 let localRecorder;
 let remoteRecorder;
 
-// Basic configuration
+// Basic STUN server configuration
 const configuration = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' }
@@ -27,15 +27,15 @@ const pc2 = new RTCPeerConnection(configuration);
 pc1.onicecandidate = event => pc2.addIceCandidate(event.candidate);
 pc2.onicecandidate = event => pc1.addIceCandidate(event.candidate);
 
-// When remote stream arrives display it in the remote video element
+// When remote stream arrives, display it in the remote audio element
 pc2.ontrack = event => {
-    remoteVideo.srcObject = event.streams[0];
+    remoteAudio.srcObject = event.streams[0];
     remoteStream = event.streams[0];
 };
 
 startPeerBtn.addEventListener('click', async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    localVideo.srcObject = stream;
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    localAudio.srcObject = stream;
     localStream = stream;
 
     stream.getTracks().forEach(track => pc1.addTrack(track, stream));
@@ -52,7 +52,7 @@ startPeerBtn.addEventListener('click', async () => {
 startLocalRecordingBtn.addEventListener('click', () => {
     localRecorder = new MediaRecorder(localStream);
     localRecorder.start();
-    // TODO: Handle ondataavailable for localRecorder like in your original code
+    // TODO: Handle ondataavailable for localRecorder as per your requirements
 });
 
 stopLocalRecordingBtn.addEventListener('click', () => {
@@ -62,7 +62,7 @@ stopLocalRecordingBtn.addEventListener('click', () => {
 startRemoteRecordingBtn.addEventListener('click', () => {
     remoteRecorder = new MediaRecorder(remoteStream);
     remoteRecorder.start();
-    // TODO: Handle ondataavailable for remoteRecorder like in your original code
+    // TODO: Handle ondataavailable for remoteRecorder as per your requirements
 });
 
 stopRemoteRecordingBtn.addEventListener('click', () => {
