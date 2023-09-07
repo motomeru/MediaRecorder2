@@ -24,22 +24,14 @@ pc2.onicecandidate = event => pc1.addIceCandidate(event.candidate);
 
 pc2.ontrack = event => {
     remoteStream = event.streams[0];
-    remoteRecorder = new MediaRecorder(remoteStream);
-    remoteRecorder.ondataavailable = event => {
-        remoteChunks.push(event.data);
-    };
-    remoteRecorder.onstop = createDownloadLinkForRemote;
-    remoteRecorder.start();
+    // Start recording only after the track is received
+    startRemoteRecording();
 };
 
 async function startRecording() {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    localRecorder = new MediaRecorder(localStream);
-    localRecorder.ondataavailable = event => {
-        localChunks.push(event.data);
-    };
-    localRecorder.onstop = createDownloadLinkForLocal;
-    localRecorder.start();
+    
+    startLocalRecording();
 
     localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
 
@@ -50,6 +42,24 @@ async function startRecording() {
     const answer = await pc2.createAnswer();
     await pc2.setLocalDescription(answer);
     await pc1.setRemoteDescription(answer);
+}
+
+function startLocalRecording() {
+    localRecorder = new MediaRecorder(localStream);
+    localRecorder.ondataavailable = event => {
+        localChunks.push(event.data);
+    };
+    localRecorder.onstop = createDownloadLinkForLocal;
+    localRecorder.start();
+}
+
+function startRemoteRecording() {
+    remoteRecorder = new MediaRecorder(remoteStream);
+    remoteRecorder.ondataavailable = event => {
+        remoteChunks.push(event.data);
+    };
+    remoteRecorder.onstop = createDownloadLinkForRemote;
+    remoteRecorder.start();
 }
 
 function stopAllRecording() {
