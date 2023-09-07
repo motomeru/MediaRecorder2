@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Recorder</title>
+</head>
+<body>
+    <button id="startPeer">Start Peer Connection</button>
+
+    <div id="localControls">
+        <h3>Local Video</h3>
+        <video id="localVideo" autoplay muted playsinline></video>
+        <button id="startLocalRecording">Start Local Recording</button>
+        <button id="stopLocalRecording">Stop Local Recording</button>
+    </div>
+
+    <div id="remoteControls">
+        <h3>Remote Video</h3>
+        <video id="remoteVideo" autoplay playsinline></video>
+        <button id="startRemoteRecording">Start Remote Recording</button>
+        <button id="stopRemoteRecording">Stop Remote Recording</button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
